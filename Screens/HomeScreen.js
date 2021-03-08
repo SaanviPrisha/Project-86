@@ -8,22 +8,108 @@ export default class HomeScreen extends React.Component {
     constructor() {
         super()
         this.state = {
-            bookName: "",
+            itemName: "",
             reason: "",
             description: "",
-            userId: firebase.auth().currentUser.email
+            userId: firebase.auth().currentUser.email,
+            itemRequestActive: false,
+            requestId: '',
+            requestedItemName: '',
+            itemStatus: '',
+            docId: '',
+            username: '',
         }
     }
     requestItem = async () => {
       var rID = Math.random().toString(36).substring(7)
       db.collection("Requested_items").add({
         user_id: this.state.userId,
-        itemName: this.state.bookName,
+        itemName: this.state.itemName,
         description: this.state.description,
         reason: this.state.reason,
-        request_id: rID
+        request_id: rID,
+        item_status: "Requested"
       })
       alert("Item was requested succesfully!")
+      await this.getItemRequest()
+      db.collection("Users").where("email_id","==",this.state.userId).get()
+      .then((snapshot) => {
+        snapshot.forEach(doc => {
+          var data = doc.data()
+          db.collection("Users").doc(doc.id).update({
+            item_request_active: true
+          })
+        });
+      })
+    }
+    getItemRequest = () => {
+      db.collection("Users").where("email_id","==",this.state.userId).get()
+      .then((snapshot) => {
+        snapshot.forEach(doc => {
+          var data = doc.data()
+          this.setState({
+            itemRequestActive: data.book_request_active,
+            username: data.first_name + " " + data.last_name
+          })
+        });
+      })
+    }
+    getItemInfo = () => {
+      db.collection("Requested_items").where("user_id","==",this.state.userId).get().then((snapshot) => {
+        snapshot.forEach(doc => {
+          var data = doc.data()
+          if(data.book_status != "Recieved") {
+            this.setState({
+              requestId: data.request_id,
+              requestedItemName: data.book_name,
+              itemStatus: data.book_status,
+              docId: doc.id
+            })
+          }
+        })
+      })
+    }
+    updateItemStatus = () => {
+      db.collection("Requested_items").doc(this.state.docId).update({
+        book_status: "Recieved"
+      })
+      db.collection("Users").where("email_id","==",this.state.userId).get()
+      .then((snapshot) => {
+        snapshot.forEach(doc => {
+          var data = doc.data()
+          db.collection("Users").doc(doc.id).update({
+            item_request_active: false
+          })
+        });
+      })
+    }
+    sendNotification = async () => {
+      var targetUserID = ""
+      await db.collection("All_Notifications").where("request_id","==",this.state.requestId).get().then(snapshot => {
+        shapshot.forEach(doc => {
+          var data = doc.data()
+          targetUserID = data.donor_id
+        })
+      })
+      db.collection("All_Notifications").add({
+        book_name: this.state.requestItemName,
+        date: firebase.firestore.FieldValue.serverTimestamp(),
+        message: this.state.username + " has recieved the book " + this.state.requestItemName + ".",
+        target_user_id: targetUserID,
+        notificationStatus: "unread"
+      })
+    }
+    recievedBook = (bookName) => {
+      db.collection("Recieved_Books").add({
+        user_id: this.state.userId,
+        book_name: bookName,
+        request_id: this.state.requestId,
+        bookStatus: "recieved"
+      })
+    }
+    componentDidMount() {
+      this.getBookRequest()
+      this.getBookInfo()
     }
     render() {
         return (
