@@ -144,6 +144,7 @@ export default class WelcomeScreen extends React.Component {
           address: this.state.Adress,
           contact_Info: this.state.contactInfo,
           email_id: this.state.EmailId,
+          book_request_active: false
         })
         alert("User was added succesfully")
       })
