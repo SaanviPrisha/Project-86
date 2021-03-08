@@ -14,7 +14,7 @@ export default class HomeScreen extends React.Component {
             userId: firebase.auth().currentUser.email
         }
     }
-    requestBook = async () => {
+    requestItem = async () => {
       var rID = Math.random().toString(36).substring(7)
       db.collection("Requested_items").add({
         user_id: this.state.userId,
@@ -41,7 +41,7 @@ export default class HomeScreen extends React.Component {
                         });}}>
                     </TextInput>
                     <TextInput
-                        placeholder={'Description'}
+                        placeholder={'Description of Item'}
                         style={styles.textInput2}
                         multiline={true}
                         onChangeText={(text) => {
@@ -59,7 +59,7 @@ export default class HomeScreen extends React.Component {
                         });}}>
                     </TextInput>
                     <TouchableOpacity onPress={() => {
-                      this.requestBook()
+                      this.requestItem()
                     }} style={styles.RequestButton}>
                         <Text style={styles.login}>Request</Text>
                     </TouchableOpacity>
