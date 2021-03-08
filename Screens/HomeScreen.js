@@ -206,10 +206,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 5,
   },
+  requestButton1: {
+    marginTop: 10,
+    backgroundColor: '#94ebaf',
+    width: 150,
+    height: 50,
+    borderRadius: 5,
+    alignText: 'center'
+  },
   login: {
     fontSize: 16,
     marginTop: 20,
     fontFamily: 'Courier New',
     fontWeight: 'bold'
+  },
+  login1: {
+    marginTop: 20,
+    fontSize: 22,
+    fontFamily: 'Georgia',
   },
 });
